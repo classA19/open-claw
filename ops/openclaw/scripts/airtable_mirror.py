@@ -20,7 +20,7 @@ from pyairtable import Api
 # ── Config ─────────────────────────────────────────────────────
 
 BASE_ID = "appfa63VIz7mjwNHe"
-DB_PATH = Path(__file__).resolve().parent.parent / "data" / "ops_mirror.db"
+DB_PATH = Path(__file__).resolve().parent.parent / "workspace" / "ops_mirror.db"
 
 # ── Coercion helpers ───────────────────────────────────────────
 

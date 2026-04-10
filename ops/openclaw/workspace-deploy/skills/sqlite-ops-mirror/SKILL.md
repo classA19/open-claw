@@ -11,18 +11,18 @@ A local SQLite database mirrors four Airtable tables from the Operations base. I
 
 ## Query tool
 
-    python3 ~/open-claw/ops/openclaw/scripts/query_mirror.py "<SQL>"
+    python3 /home/node/.openclaw/workspace/query_mirror.py "<SQL>"
 
 ### Built-in commands
 
     # List all tables and record counts
-    python3 ~/open-claw/ops/openclaw/scripts/query_mirror.py tables
+    python3 /home/node/.openclaw/workspace/query_mirror.py tables
 
     # Show column names for a table
-    python3 ~/open-claw/ops/openclaw/scripts/query_mirror.py schema projects
+    python3 /home/node/.openclaw/workspace/query_mirror.py schema projects
 
     # Check when each table was last synced
-    python3 ~/open-claw/ops/openclaw/scripts/query_mirror.py freshness
+    python3 /home/node/.openclaw/workspace/query_mirror.py freshness
 
 ## Common queries
 
@@ -46,7 +46,7 @@ A local SQLite database mirrors four Airtable tables from the Operations base. I
 
 ## Database location
 
-    ~/open-claw/ops/openclaw/data/ops_mirror.db
+    /home/node/.openclaw/workspace/ops_mirror.db
 
 ## Schema
 
@@ -74,7 +74,7 @@ Use json_each() to resolve linked record IDs:
 
 - **Writing** data -- use Airtable API directly
 - Tables **not in the mirror**: Customers, Purchased Items, Billable Expense Log, Receipts, Vendors, Estimates
-- When freshness matters and something just changed -- run a manual sync first: python3 ~/open-claw/ops/openclaw/scripts/airtable_mirror.py
+- When freshness matters and something just changed -- check freshness first, then decide
 
 ## Relationship to other skills
 

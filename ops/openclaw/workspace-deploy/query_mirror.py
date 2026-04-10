@@ -13,7 +13,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-DB_PATH = Path(__file__).resolve().parent.parent / "workspace" / "ops_mirror.db"
+DB_PATH = Path(__file__).resolve().parent / "ops_mirror.db"
 
 
 def run_query(sql):

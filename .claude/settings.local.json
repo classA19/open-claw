@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs head:*)",
+      "Bash(xargs cat:*)",
+      "Bash(xargs grep:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh repo:*)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(git -C \"C:/Users/class/atlas-vault\" pull --rebase)",
+      "Bash(python -c \"import json; d=json.load\\(open\\('C:/Users/class/.claude/settings.json'\\)\\); print\\(d['hooks']['SessionStart'][0]['hooks'][0]['command']\\)\")",
+      "WebSearch",
+      "Bash(pip install:*)"
+    ]
+  }
+}
