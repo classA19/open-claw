@@ -5,78 +5,44 @@ description: When Alec asks about projects, jobs, tasks, time entries, or materi
 
 # SQLite Ops Mirror
 
-A local SQLite database mirrors four Airtable tables from the Operations base. It syncs every hour via cron. **When Alec asks about projects, jobs, time, tasks, or materials -- query this DB immediately. Do not ask permission or hedge. Just run the query and show results.**
+DB: `/home/node/.openclaw/workspace/ops_mirror.db`
+Tool: `python3 /home/node/.openclaw/workspace/query_mirror.py "<SQL>"`
 
-"Projects" in this context means Alec's electrical contracting jobs (customers, job sites), not his software/automation projects.
+"Projects" = electrical contracting jobs, not software projects.
 
-## Query tool
+## Named queries -- use these directly
 
-    python3 /home/node/.openclaw/workspace/query_mirror.py "<SQL>"
+    # Ongoing jobs
+    python3 /home/node/.openclaw/workspace/query_mirror.py "SELECT name, project_code, labor_rate FROM projects WHERE status='Ongoing' ORDER BY name"
 
-### Built-in commands
+    # Recent time entries
+    python3 /home/node/.openclaw/workspace/query_mirror.py "SELECT tl.date_from_ci, tl.duration, tl.description, p.name AS job FROM time_log tl, json_each(tl.project) je JOIN projects p ON je.value=p.airtable_id ORDER BY tl.clock_in DESC LIMIT 20"
 
-    # List all tables and record counts
-    python3 /home/node/.openclaw/workspace/query_mirror.py tables
+    # Open tasks
+    python3 /home/node/.openclaw/workspace/query_mirror.py "SELECT name, project, due, priority FROM tasks WHERE due IS NOT NULL ORDER BY due"
 
-    # Show column names for a table
-    python3 /home/node/.openclaw/workspace/query_mirror.py schema projects
+    # Material lists for a job (replace %term%)
+    python3 /home/node/.openclaw/workspace/query_mirror.py "SELECT ml.name, ml.qty, ml.purchased FROM material_lists ml, json_each(ml.project) je JOIN projects p ON je.value=p.airtable_id WHERE p.name LIKE '%term%'"
 
-    # Check when each table was last synced
+    # DB freshness
     python3 /home/node/.openclaw/workspace/query_mirror.py freshness
 
-## Common queries
+## Schema (key columns only)
 
-    -- Ongoing projects
-    SELECT name, project_code FROM projects WHERE status = 'Ongoing' ORDER BY name;
+projects: airtable_id, name, status, project_code, customer (JSON IDs), labor_rate, auto_id
+tasks: airtable_id, name, description, project (text), due, priority
+time_log: airtable_id, project (JSON IDs), description, clock_in, clock_out, duration, approved, date_from_ci
+material_lists: airtable_id, name, field_entry, qty, project (JSON IDs), purchased
 
-    -- Recent time entries
-    SELECT tl.clock_in, tl.duration, p.name AS project
-    FROM time_log tl, json_each(tl.project) je
-    JOIN projects p ON je.value = p.airtable_id
-    ORDER BY tl.clock_in DESC LIMIT 10;
+Linked fields (customer, project) are JSON arrays of Airtable record IDs -- join with json_each().
 
-    -- Tasks by priority
-    SELECT name, project, due, priority FROM tasks ORDER BY due;
+## Return format
 
-    -- Material lists for a project
-    SELECT ml.name, ml.qty, ml.purchased
-    FROM material_lists ml, json_each(ml.project) je
-    JOIN projects p ON je.value = p.airtable_id
-    WHERE p.name LIKE '%search_term%';
+- Jobs/tasks: bullet list, name + relevant detail
+- Time entries: table with date, duration, job, description
+- Counts/totals: single line
+- Always show freshness timestamp if data staleness could matter
 
-## Database location
+## Limits
 
-    /home/node/.openclaw/workspace/ops_mirror.db
-
-## Schema
-
-### projects
-airtable_id (PK), name, status, project_code, customer (JSON array of record IDs), descriptors (JSON array), last_modified, created, rate_name (JSON array of record IDs), labor_rate, auto_id, record_id
-
-### tasks
-airtable_id (PK), name, description, date_created, project (plain text), due, priority
-
-### time_log
-airtable_id (PK), name, project (JSON array of record IDs), description, clock_in, clock_out, duration, approved (0/1), date_from_ci
-
-### material_lists
-airtable_id (PK), name, field_entry, common_mats (JSON array of record IDs), qty, project (JSON array of record IDs), purchased
-
-## Linked record joins
-
-Use json_each() to resolve linked record IDs:
-
-    SELECT tl.clock_in, tl.duration, p.name AS project_name
-    FROM time_log tl, json_each(tl.project) je
-    JOIN projects p ON je.value = p.airtable_id;
-
-## When NOT to use this skill
-
-- **Writing** data -- use Airtable API directly
-- Tables **not in the mirror**: Customers, Purchased Items, Billable Expense Log, Receipts, Vendors, Estimates
-- When freshness matters and something just changed -- check freshness first, then decide
-
-## Relationship to other skills
-
-- **airtable-project-ops**: handles project writes. This skill handles project reads.
-- **field-task-orchestrator**: handles task creation. This skill looks up existing tasks.
+Writes go to Airtable API, not this DB. Tables not mirrored: Customers, Purchased Items, BEL, Receipts, Vendors, Estimates.
