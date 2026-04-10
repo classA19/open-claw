@@ -11,3 +11,7 @@ caddy-data/
 caddy-config/
 
 *.log
+
+*.db
+*.db-wal
+*.db-shm
